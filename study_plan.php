@@ -105,7 +105,7 @@ $topics_per_day = ceil($total_topics / $study_days);
             document.getElementById('progress-text').innerText = Math.round(progress) + '% Completed';
         }
     </script>
-        <a href="study_planner.php" class="upload-link">Upload another file</a>
+        <a href="index.html" class="upload-link">Upload another file</a>
     </div>
 </body>
 </html>
