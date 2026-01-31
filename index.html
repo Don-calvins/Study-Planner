@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner Web App</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; }
+        button { background: #4CAF50; color: white; padding: 12px; border: none; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Study Planner from Document</h1>
+    <input type="file" id="fileInput" accept=".txt,.pdf" />
+    <textarea id="content" placeholder="Paste document text here (or upload file)" rows="10"></textarea>
+    <button onclick="generatePlan()">Generate Plan</button>
+    <div id="planOutput"></div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+        
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => document.getElementById('content').value = e.target.result;
+                reader.readAsText(file);
+            }
+        }
+        
+        function generatePlan() {
+            const text = document.getElementById('content').value;
+            const topics = extractTopics(text);
+            const plan = createWeeklyPlan(topics);
+            document.getElementById('planOutput').innerHTML = renderTable(plan);
+        }
+        
+        function extractTopics(text) {
+            // Simple regex to find chapters/topics/deadlines (improve with NLP later)
+            const topics = [];
+            const lines = text.toLowerCase().split('\n');
+            lines.forEach(line => {
+                if (line.includes('chapter') || line.includes('topic') || line.match(/due\s*\w+/i)) {
+                    topics.push(line.trim().substring(0, 30) + '...');
+                }
+            });
+            return topics.slice(0, 10) || ['Math Basics', 'Science Intro', 'History Overview']; // Fallback
+        }
+        
+        function createWeeklyPlan(topics) {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const plan = { headers: ['Time', ...days, 'Sun'], rows: [] };
+            const slots = ['7-9 AM', '4-6 PM', '8-9 PM'];
+            slots.forEach(slot => {
+                const row = { time: slot, tasks: {} };
+                topics.forEach((topic, i) => {
+                    row.tasks[days[i % days.length]] = topic;
+                });
+                row.tasks['Sun'] = 'Review';
+                plan.rows.push(row);
+            });
+            return plan;
+        }
+        
+        function renderTable(plan) {
+            let html = '<table><tr><th>' + plan.headers.join('</th><th>') + '</th></tr>';
+            plan.rows.forEach(row => {
+                html += '<tr><td>' + row.time + '</td>';
+                plan.headers.slice(1).forEach(day => {
+                    html += '<td>' + (row.tasks[day] || 'Rest') + '</td>';
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            return html;
+        }
+    </script>
+</body>
+</html>
